@@ -1,10 +1,6 @@
 pipeline {
     agent any
     
-    tools {
-        maven 'Maven-3'
-    }
-    
     environment {
         NEXUS_CREDS = credentials('nexus-credentials')
     }
@@ -18,13 +14,13 @@ pipeline {
         
         stage('Build') {
             steps {
-                sh 'mvn -B -DskipTests clean compile'
+                sh './mvnw -B -DskipTests clean compile'
             }
         }
         
         stage('Test') {
             steps {
-                sh 'mvn test'
+                sh './mvnw test'
             }
             post {
                 always {
@@ -35,7 +31,7 @@ pipeline {
         
         stage('Package') {
             steps {
-                sh 'mvn package -DskipTests'
+                sh './mvnw package -DskipTests'
                 archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
@@ -56,14 +52,20 @@ pipeline {
                         </servers>
                     </settings>
                 """
-                sh 'mvn deploy -s settings.xml'
+                sh './mvnw deploy -s settings.xml'
             }
         }
     }
     
     post {
-        success { echo 'Pipeline réussi ! Artefact dans Nexus' }
-        failure { echo 'Pipeline échoué ! Aucun déploiement' }
-        always { cleanWs() }
+        success { 
+            echo 'Pipeline réussi ! Artefact dans Nexus'
+        }
+        failure { 
+            echo 'Pipeline échoué ! Aucun déploiement'
+        }
+        always { 
+            cleanWs() 
+        }
     }
 }
